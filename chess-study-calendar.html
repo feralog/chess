@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plano de Estudos de Xadrez - Rumo aos 1500+</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            animation: fadeIn 1s ease-out;
+        }
+
+        h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .chess-piece {
+            font-size: 2em;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .intro-section {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 40px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+
+        .repertoire-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .repertoire-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid rgba(255,255,255,0.2);
+            transition: transform 0.3s ease;
+        }
+
+        .repertoire-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255,255,255,0.1);
+        }
+
+        .repertoire-card h3 {
+            color: #64b5f6;
+            margin-bottom: 10px;
+        }
+
+        .calendar-section {
+            margin-top: 40px;
+        }
+
+        .month-container {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+
+        .month-header {
+            text-align: center;
+            font-size: 2em;
+            margin-bottom: 20px;
+            color: #ffd54f;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 10px;
+        }
+
+        .day-header {
+            text-align: center;
+            font-weight: bold;
+            color: #90caf9;
+            padding: 10px;
+        }
+
+        .day-cell {
+            aspect-ratio: 1;
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            padding: 8px;
+            border: 1px solid rgba(255,255,255,0.1);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .day-cell:hover {
+            transform: scale(1.05);
+            background: rgba(255,255,255,0.15);
+            box-shadow: 0 4px 20px rgba(255,255,255,0.2);
+        }
+
+        .day-number {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .day-content {
+            font-size: 0.7em;
+            line-height: 1.2;
+        }
+
+        .empty-cell {
+            background: transparent;
+            border: none;
+            cursor: default;
+        }
+
+        .empty-cell:hover {
+            transform: none;
+            background: transparent;
+            box-shadow: none;
+        }
+
+        /* Cores por tipo de estudo */
+        .white-study {
+            background: linear-gradient(135deg, #2196f3, #1976d2);
+        }
+
+        .black-study {
+            background: linear-gradient(135deg, #f44336, #d32f2f);
+        }
+
+        .practice {
+            background: linear-gradient(135deg, #4caf50, #388e3c);
+        }
+
+        .mixed-study {
+            background: linear-gradient(135deg, #9c27b0, #7b1fa2);
+        }
+
+        .review {
+            background: linear-gradient(135deg, #ff9800, #f57c00);
+        }
+
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .legend-color {
+            width: 30px;
+            height: 30px;
+            border-radius: 5px;
+        }
+
+        .tooltip {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.9);
+            color: white;
+            padding: 10px;
+            border-radius: 10px;
+            font-size: 0.9em;
+            width: 200px;
+            text-align: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            z-index: 10;
+        }
+
+        .day-cell:hover .tooltip {
+            opacity: 1;
+        }
+
+        @media (max-width: 768px) {
+            .calendar-grid {
+                gap: 5px;
+            }
+            
+            .day-content {
+                font-size: 0.6em;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><span class="chess-piece">♔</span> Plano de Estudos de Xadrez <span class="chess-piece">♚</span></h1>
+            <p>Objetivo: Dominar Ruy Lopez e Expandir Repertório | Rating Atual: 1500</p>
+        </header>
+
+        <div class="intro-section">
+            <h2>📋 Visão Geral do Plano</h2>
+            
+            <div class="repertoire-grid">
+                <div class="repertoire-card">
+                    <h3>⚪ Repertório de Brancas</h3>
+                    <ul>
+                        <li><strong>Principal:</strong> Ruy Lopez (Exchange → Sistema Fechado)</li>
+                        <li><strong>Vs Siciliana:</strong> Alapin (2.c3)</li>
+                        <li><strong>Vs Francesa:</strong> Tarrasch (3.Nd2)</li>
+                        <li><strong>Surpresas:</strong> Gambito Escocês, Vienna</li>
+                    </ul>
+                </div>
+                
+                <div class="repertoire-card">
+                    <h3>⚫ Repertório de Pretas</h3>
+                    <ul>
+                        <li><strong>Vs 1.e4:</strong> Dragão Acelerado (principal)</li>
+                        <li><strong>Alternativa:</strong> Sveshnikov (agressiva)</li>
+                        <li><strong>Surpresa:</strong> Escandinava Moderna</li>
+                        <li><strong>Vs 1.d4:</strong> Eslava Aceita</li>
+                    </ul>
+                </div>
+                
+                <div class="repertoire-card">
+                    <h3>🎯 Rotina Diária (1-2h)</h3>
+                    <ul>
+                        <li>15 min: Aquecimento com puzzles táticos</li>
+                        <li>30 min: Estudo de abertura do dia</li>
+                        <li>30 min: Partidas práticas focadas</li>
+                        <li>15 min: Análise e anotações</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color white-study"></div>
+                <span>Estudo Brancas</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color black-study"></div>
+                <span>Estudo Pretas</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color practice"></div>
+                <span>Prática/Análise</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color mixed-study"></div>
+                <span>Estudo Misto</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color review"></div>
+                <span>Revisão</span>
+            </div>
+        </div>
+
+        <div class="calendar-section">
+            <!-- JUNHO 2024 -->
+            <div class="month-container">
+                <h2 class="month-header">Junho 2024 - Fase Fundação</h2>
+                <div class="calendar-grid">
+                    <div class="day-header">Dom</div>
+                    <div class="day-header">Seg</div>
+                    <div class="day-header">Ter</div>
+                    <div class="day-header">Qua</div>
+                    <div class="day-header">Qui</div>
+                    <div class="day-header">Sex</div>
+                    <div class="day-header">Sáb</div>
+                    
+                    <!-- Semana 1 -->
+                    <div class="empty-cell"></div>
+                    <div class="empty-cell"></div>
+                    <div class="empty-cell"></div>
+                    <div class="empty-cell"></div>
+                    <div class="empty-cell"></div>
+                    <div class="empty-cell"></div>
+                    <div class="day-cell white-study">
+                        <div class="day-number">1</div>
+                        <div class="day-content">Ruy Lopez Exchange Intro</div>
+                        <div class="tooltip">Início do plano! Vídeos introdutórios + primeiros puzzles</div>
+                    </div>
+                    
+                    <!-- Semana 2 -->
+                    <div class="day-cell white-study">
+                        <div class="day-number">2</div>
+                        <div class="day-content">RL Exchange: Estrutura</div>
+                    </div>
+                    <div class="day-cell white-study">
+                        <div class="day-number">3</div>
+                        <div class="day-content">RL Exchange: Planos</div>
+                    </div>
+                    <div class="day-cell practice">
+                        <div class="day-number">4</div>
+                        <div class="day-content">Prática + Análise</div>
+                    </div>
+                    <div class="day-cell white-study">
+                        <div class="day-number">5</div>
+                        <div class="day-content">Alapin Básico</div>
+                    </div>
+                    <div class="day-cell white-study">
+                        <div class="day-number">6</div>
+                        <div class="day-content">Alapin: 2...d5</div>
+                    </div>
+                    <div class="day-cell practice">
+                        <div class="day-number">7</div>
+                        <div class="day-content">Torneio Treino</div>
+                    </div>
+                    <div class="day-cell review">
+                        <div class="day-number">8</div>
+                        <div class="day-content">Revisão Semanal</div>
+                    </div>
+                    
+                    <!-- Semana 3 -->
+                    <div class="day-cell white-study">
+                        <div class="day-number">9</div>
+                        <div class="day-content">Sistema Londres</div>
+                    </div>
+                    <div class="day-cell white-study">
+                        <div class="day-number">10</div>
+                        <div class="day-content">RL Exchange Avançado</div>
+                    </div>
+                    <div class="day-cell practice">
+                        <div class="day-number">11</div>
+                        <div class="day-content">Blitz Focado</div>
+                    </div>
+                    <div class="day-cell white-study">
+                        <div class="day-number">12</div>
+                        <div class="day-content">Chessable RL</div>
+                    </div>
+                    <div class="day-cell practice">
+                        <div class="day-number">13</div>
+                        <div class="day-content">Análise Profunda</div>
+                    </div>
+                    <div class="day-cell white-study">
+                        <div class="day-number">14</div>
+                        <div class="day-content">Armadilhas RL</div>
+                    </div>
+                    <div class="day-cell review">
+                        <div class="day-number">15</div>
+                        <div class="day-content">Revisão + Ajustes</div>
+                    </div>
+                    
+                    <!-- Semana 4 -->
+                    <div class="day-cell black-study">
+                        <div class="day-number">16</div>
+                        <div class="day-content">Dragão Acelerado Intro</div>
+                        <div class="tooltip">Começando as pretas! Estrutura básica do Dragão</div>
+                    </div>
+                    <div class="day-cell black-study">
+                        <div class="day-number">17</div>
+                        <div class="day-content">Dragão: Planos</div>
+                    </div>
+                    <div class="day-cell mixed-study">
+                        <div class="day-number">18</div>
+                        <div class="day-content">RL + Dragão</div>
+                    </div>
+                    <div class="day-cell practice">
+                        <div class="day-number">19</div>
+                        <div class="day-content">Prática Mista</div>
+                    </div>
+                    <div class="day-cell black-study">
+                        <div class="day-number">20</div>
+                        <div class="day-content">Dragão vs Alapin</div>
+                    </div>
+                    <div class="day-cell mixed-study">
+                        <div class="day-number">21</div>
+                        <div class="day-content">Integração</div>
+                    </div>
+                    <div class="day-cell review">
+                        <div class="day-number">22</div>
+                        <div class="day-content">Revisão Mensal</div>
+                    </div>
+                    
+                    <!-- Semana 5 -->
+                    <div class="day-cell practice">
+                        <div class="day-number">23</div>
+                        <div class="day-content">Simulado 45min</div>
+                    </div>
+                    <div class="day-cell mixed-study">
+                        <div class="day-number">24</div>
+                        <div class="day-content">Ajustes Finos</div>
+                    </div>
+                    <div class="day-cell black-study">
+                        <div class="day-number">25</div>
+                        <div class="day-content">Dragão Variantes</div>
+                    </div>
+                    <div class="day-cell white-study">
+                        <div class="day-number">26</div>
+                        <div class="day-content">RL Sistema Fechado Preview</div>
+                    </div>
+                    <div class="day-cell practice">
+                        <div class="day-number">27</div>
+                        <div class="day-content">Torneio Online</div>
+                    </div>
+                    <div class="day-cell mixed-study">
+                        <div class="day-number">28</div>
+                        <div class="day-content">Consolidação</div>
+                    </div>
+                    <div class="day-cell review">
+                        <div class="day-number">29</div>
+                        <div class="day-content">Preparação Julho</div>
+                    </div>
+                    <div class="day-cell practice">
+                        <div class="day-number">30</div>
+                        <div class="day-content">Fechamento Junho</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- JULHO 2024 -->
+            <div class="month-container">
+                <h2 class="month-header">Julho 2024 - Fase Expansão</h2>
+                <div class="calendar-grid">
+                    <div class="day-header">Dom</div>
+                    <div class="day-header">Seg</div>
+                    <div class="day-header">Ter</div>
+                    <div class="day-header">Qua</div>
+                    <div class="day-header">Qui</div>
+                    <div class="day-header">Sex</div>
+                    <div class="day-header">Sáb</div>
+                    
+                    <!-- Semana 1 -->
+                    <div class="empty-cell"></div>
+                    <div class="day-cell white-study">
+                        <div class="day-number">1</div>
+                        <div class="day-content">RL Sistema Fechado</div>
+                        <div class="tooltip">Expandindo para o Sistema Fechado tradicional</div>
+                    </div>
+                    <div class="day-cell white-study">
+                        <div class="day-number">2</div>
+                        <div class="day-content">RL: Manobra Nb1-d2-f1</div>
+                    </div>
+                    <div class="day-cell practice">
+                        <div class="day-number">3</div>
+                        <div class="day-content">Prática Intensiva</div>
+                    </div>
+                    <div class="day-cell white-study">
+                        <div class="day-number">4</div>
+                        <div class="day-content">Gambito Escocês</div>
+                    </div>
+                    <div class="day-cell black-study">
+                        <div class="day-number">5</div>
+                        <div class="day-content">Dragão Aprofundado</div>
+                    </div>
+                    <div class="day-cell mixed-study">
+                        <div class="day-number">6</div>
+                        <div class="day-content">Integração Completa</div>
+                    </div>
+                    
+                    <!-- Semana 2 -->
+                    <div class="day-cell review">
+                        <div class="day-number">7</div>
+                        <div class="day-content">Revisão + Torneio</div>
+                    </div>
+                    <div class="day-cell white-study">
+                        <div class="day-number">8</div>
+                        <div class="day-content">Alapin Avançado</div>
+                    </div>
+                    <div class="day-cell white-study">
+                        <div class="day-number">9</div>
+                        <div class="day-content">Vienna Game</div>
+                    </div>
+                    <div class="day-cell practice">
+                        <div class="day-number">10</div>
+                        <div class="day-content">Blitz Temático</div>
+                    </div>
+                    <div class="day-cell black-study">
+                        <div class="day-number">11</div>
+                        <div class="day-content">Eslava Aceita</div>
+                    </div>
+                    <div class="day-cell black-study">
+                        <div class="day-number">12</div>
+                        <div class="day-content">Eslava: Planos</div>
+                    </div>
+                    <div class="day-cell mixed-study">
+                        <div class="day-number">13</div>
+                        <div class="day-content">Conexões Teóricas</div>
+                    </div>
+                    
+                    <!-- Semana 3 -->
+                    <div class="day-cell review">
+                        <div class="day-number">14</div>
+                        <div class="day-content">Meio Mês Check</div>
+                    </div>
+                    <div class="day-cell black-study">
+                        <div class="day-number">15</div>
+                        <div class="day-content">Sveshnikov Intro</div>
+                        <div class="tooltip">Adicionando a Sveshnikov ao repertório!</div>
+                    </div>
+                    <div class="day-cell black-study">
+                        <div class="day-number">16</div>
+                        <div class="day-content">Svesh: 6.Ndb5</div>
+                    </div>
+                    <div class="day-cell practice">
+                        <div class="day-number">17</div>
+                        <div class="day-content">Prática Svesh</div>
+                    </div>
+                    <div class="day-cell white-study">
+                        <div class="day-number">18</div>
+                        <div class="day-content">RL vs Defesas Raras</div>
+                    </div>
+                    <div class="day-cell mixed-study">
+                        <div class="day-number">19</div>
+                        <div class="day-content">Repertório Completo</div>
+                    </div>
+                    <div class="day-cell practice">
+                        <div class="day-number">20</div>
+                        <div class="day-content">Simulado 45min</div>
+                    </div>
+                    
+                    <!-- Semana 4 -->
+                    <div class="day-cell review">
+                        <div class="day-number">21</div>
+                        <div class="day-content">Análise Profunda</div>
+                    </div>
+                    <div class="day-cell white-study">
+                        <div class="day-number">22</div>
+                        <div class="day-content">Francesa Tarrasch</div>
+                    </div>
+                    <div class="day-cell black-study">
+                        <div class="day-number">23</div>
+                        <div class="day-content">Holandesa Preview</div>
+                    </div>
+                    <div class="day-cell mixed-study">
+                        <div class="day-number">24</div>
+                        <div class="day-content">Tática Temática</div>
+                    </div>
+                    <div class="day-cell practice">
+                        <div class="day-number">25</div>
+                        <div class="day-content">Torneio Treino</div>
+                    </div>
+                    <div class="day-cell mixed-study">
+                        <div class="day-number">26</div>
+                        <div class="day-content">Ajustes Repertório</div>
+                    </div>
+                    <div class="day-cell review">
+                        <div class="day-number">27</div>
+                        <div class="day-content">Revisão Julho</div>
+                    </div>
+                    
+                    <!-- Semana 5 -->
+                    <div class="day-cell practice">
+                        <div class="day-number">28</div>
+                        <div class="day-content">Weekend Blitz</div>
+                    </div>
+                    <div class="day-cell mixed-study">
+                        <div class="day-number">29</div>
+                        <div class="day-content">Consolidação</div>
+                    </div>
+                    <div class="day-cell white-study">
+                        <div class="day-number">30</div>
+                        <div class="day-content">RL Marshall Preview</div>
+                    </div>
+                    <div class="day-cell review">
+                        <div class="day-number">31</div>
+                        <div class="day-content">Preparação Agosto</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AGOSTO 2024 -->
+            <div class="month-container">
+                <h2 class="month-header">Agosto 2024 - Fase Polimento</h2>
+                <div class="calendar-grid">
+                    <div class="day-header">Dom</div>
+                    <div class="day-header">Seg</div>
+                    <div class="day-header">Ter</div>
+                    <div class="day-header">Qua</div>
+                    <div class="day-header">Qui</div>
+                    <div class="day-header">Sex</div>
+                    <div class="day-header">Sáb</div>
+                    
+                    <!-- Semana 1 -->
+                    <div class="empty-cell"></div>
+                    <div class="empty-cell"></div>
+                    <div class="empty-cell"></div>
+                    <div class="empty-cell"></div>
+                    <div class="day-cell black-study">
+                        <div class="day-number">1</div>
+                        <div class="day-content">Escandinava Moderna</div>
+                        <div class="tooltip">Arma surpresa final!</div>
+                    </div>
+                    <div class="day-cell review">
+                        <div class="day-number">2</div>
+                        <div class="day-content">Revisão Geral</div>
+                    </div>
+                    <div class="day-cell practice">
+                        <div class="day-number">3</div>
+                        <div class="day-content">Simulado Torneio</div>
+                    </div>
+                    
+                    <!-- Semana 2 -->
+                    <div class="day-cell mixed-study">
+                        <div class="day-number">4</div>
+                        <div class="day-content">Armadilhas Master</div>
+                    </div>
+                    <div class="day-cell white-study">
+                        <div class="day-number">5</div>
+                        <div class="day-content">RL Perfeição</div>
+                    </div>
+                    <div class="day-cell black-study">
+                        <div class="day-number">6</div>
+                        <div class="day-content">Pretas Polimento</div>
+                    </div>
+                    <div class="day-cell practice">
+                        <div class="day-number">7</div>
+                        <div class="day-content">Rapid 15+10</div>
+                    </div>
+                    <div class="day-cell review">
+                        <div class="day-number">8</div>
+                        <div class="day-content">Análise Completa</div>
+                    </div>
+                    <div class="day-cell mixed-study">
+                        <div class="day-number">9</div>
+                        <div class="day-content">Meio-jogo Temático</div>
+                    </div>
+                    <div class="day-cell practice">
+                        <div class="day-number">10</div>
+                        <div class="day-content">Torneio Online</div>
+                    </div>
+                    
+                    <!-- Semana 3 -->
+                    <div class="day-cell review">
+                        <div class="day-number">11</div>
+                        <div class="day-content">Checkpoint</div>
+                    </div>
+                    <div class="day-cell mixed-study">
+                        <div class="day-number">12</div>
+                        <div class="day-content">Transposições</div>
+                    </div>
+                    <div class="day-cell practice">
+                        <div class="day-number">13</div>
+                        <div class="day-content">Blitz Marathon</div>
+                    </div>
+                    <div class="day-cell white-study">
+                        <div class="day-number">14</div>
+                        <div class="day-content">Brancas Final</div>
+                    </div>
+                    <div class="day-cell black-study">
+                        <div class="day-number">15</div>
+                        <div class="day-content">Pretas Final</div>
+                    </div>
+                    <div class="day-cell mixed-study">
+                        <div class="day-number">16</div>
+                        <div class="day-content">Repertório Teste</div>
+                    </div>
+                    <div class="day-cell practice">
+                        <div class="day-number">17</div>
+                        <div class="day-content">Simulado Final</div>
+                    </div>
+                    
+                    <!-- Semana 4 -->
+                    <div class="day-cell review">
+                        <div class="day-number">18</div>
+                        <div class="day-content">Revisão Final</div>
+                    </div>
+                    <div class="day-cell mixed-study">
+                        <div class="day-number">19</div>
+                        <div class="day-content">Psicologia</div>
+                    </div>
+                    <div class="day-cell practice">
+                        <div class="day-number">20</div>
+                        <div class="day-content">Treino Relógio</div>
+                    </div>
+                    <div class="day-cell review">
+                        <div class="day-number">21</div>
+                        <div class="day-content">Arquivo Aberturas</div>
+                    </div>
+                    <div class="day-cell mixed-study">
+                        <div class="day-number">22</div>
+                        <div class="day-content">Última Revisão</div>
+                    </div>
+                    <div class="day-cell practice">
+                        <div class="day-number">23</div>
+                        <div class="day-content">Aquecimento</div>
+                    </div>
+                    <div class="day-cell review">
+                        <div class="day-number">24</div>
+                        <div class="day-content">Descanso Mental</div>
+                    </div>
+                    
+                    <!-- Semana 5 -->
+                    <div class="day-cell practice">
+                        <div class="day-number">25</div>
+                        <div class="day-content">Treino Leve</div>
+                    </div>
+                    <div class="day-cell review">
+                        <div class="day-number">26</div>
+                        <div class="day-content">Revisão Rápida</div>
+                    </div>
+                    <div class="day-cell practice">
+                        <div class="day-number">27</div>
+                        <div class="day-content">Partidas Confiança</div>
+                    </div>
+                    <div class="day-cell review">
+                        <div class="day-number">28</div>
+                        <div class="day-content">Check Final</div>
+                    </div>
+                    <div class="day-cell mixed-study">
+                        <div class="day-number">29</div>
+                        <div class="day-content">Preparação Mental</div>
+                    </div>
+                    <div class="day-cell review">
+                        <div class="day-number">30</div>
+                        <div class="day-content">Véspera</div>
+                    </div>
+                    <div class="day-cell review">
+                        <div class="day-number">31</div>
+                        <div class="day-content">Pronto! 🏆</div>
+                        <div class="tooltip">Você está preparado! Boa sorte no torneio!</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
